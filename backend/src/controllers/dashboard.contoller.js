@@ -1,94 +1,110 @@
 const { get } = require('http');
 const db = require('../models');
 const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
-//const { default: Dashboard } = require('../../../frontend/src/Components/Dashboard');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const { documentType } = req.body;
-        let dest = 'backend/uploads';
+        console.log('req.params', req.params);
+        const documentType  = req.params.type || {};
+        let dest = 'uploads';
 
-        switch( documentType ){
-            case 'aadharCard':
-                dest = 'backend/uploads/aadharCard';
-                break;
-            case 'panCard':
-                dest = 'backend/uploads/panCard';
-                break;
-            case 'mhtcetResult':
-                dest = 'backend/uploads/mhtcetResult';
-                break;
-            case 'result_12th':
-                dest = 'backend/uploads/result_12';
-                break;
-            case 'admissionCard':
-                dest = 'backend/uploads/admissionCard';
-                break;
-            case 'capCard':
-                dest = 'backend/uploads/capCard';
-                break;
-            case 'domicile' || 'birthCertificate' || 'leavingCertificate':
-                dest = 'backend/uploads/domicile';
-                break;
-            default:
-                dest = 'backend/uploads/other';
-                break;
+        // If documentType is provided, append it to the destination
+        if (documentType) {
+            dest = path.join('uploads', documentType);
         }
+
+        // Ensure the directory exists
+        if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+        }
+
         cb(null, dest);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now()+ '-' +file.originalname);
+        const uniqueName = `${req.body.studentForeginId || 'unknown'}-${file.originalname}`;
+        cb(null, uniqueName);
     }
 });
 
-const upload = multer({ storage: storage}).single('file');
+ const upload = multer({  storage });
+ const uploadDocument = async (req, res) => {
 
-const uploadDocument = async(req, res) => {
-    upload(req, res, async(err) => {
-        if(err){
-            return res.status(500).json({ message: 'File upload failed', error: err })
+    try {
+        const { documentType, studentForeginId } = req.body;
+
+
+        if (!studentForeginId || !documentType) {
+            return res
+                .status(400)
+                .json({ message: "Student ID and document type are required." });
         }
 
-        try{
-            const { result_12th, aadharCard, panCard, mhtcetResult, admissionCard, capCard, domicile, birthCertificate, leavingCertificate, studentForeginId } = req.body;
+        // Prepare the field to update dynamically
+        const updateData = {};
+        updateData[documentType] = req.file.filename;
 
-            const uploadDoc = await db.uploadDocs.create({
-                Dashboard_id: req.body.Dashboard, //We need to ensure to pass this in the request
-                result_12th,
-                aadharCard,
-                panCard,
-                mhtcetResult,
-                capCard,
-                domicile,
-                birthCertificate,
-                leavingCertificate,
-                filePath: req.file.path,
-                fileType: req.file.mimetype
+        // Check if a record exists for the student ID
+        const studentId = await db.signup.findOne({
+            where: { UID: studentForeginId },
+        });
+        const Dashboard_id = await db.dashboard.findOne({
+            where: { student_foregin_id: studentId.id },
+        });
+        const existingRecord = await db.uploadDocs.findOne({
+            where: { Dashboard_id: Dashboard_id.dashboard_primary_key },
+        });
+
+        if (existingRecord) {
+            console.log('existingRecord', existingRecord);
+            console.log('updateData', updateData);
+            // Update the specific field in the existing record
+            await db.uploadDocs.update(updateData, {
+                where: { Dashboard_id: Dashboard_id.dashboard_primary_key },
             });
-            
-            res.status(201).json({ 
-                message: 'Document uploaded successfully',
-                data: uploadDoc
+
+            return res.status(200).json({
+                message: `${documentType} updated successfully.`,
+                data: updateData,
             });
-        } catch(error){
-            console.error(error);
-            res.status(500).json({ message: 'Error saving the document to database', err });
+        } else {
+            // Create a new record with the given student ID and document
+            const newRecordData = { Dashboard_id: Dashboard_id.dashboard_primary_key , ...updateData };
+            const newRecord = await db.uploadDocs.create(newRecordData);
+
+            return res.status(201).json({
+                message: `${documentType} uploaded successfully.`,
+                data: newRecord,
+            });
         }
-    });
+    } catch (error) {
+        console.error("Error handling document upload:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
 };
 
-const getDocuments = async(req, res) => {
-    try{
-        const documents = await db.uploadDocs.findAll();
+const getDocuments = async (req, res) => {
+    try {
+        const studentForeginId = req.params.studentForeginId; // Ensure this is set correctly
+        const student = await db.signup.findOne({
+            where: { UID: studentForeginId }
+        });
+        const dashboard = await db.dashboard.findOne({
+            where: { student_foregin_id: student.id }
+        });
+        const documents = await db.uploadDocs.findAll({
+            where: { Dashboard_id: dashboard.dashboard_primary_key }
+        });
         res.status(200).json({ documents });
-    } catch(error){
+    } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error retrieving documents', error });
     }
 };
 
 module.exports = {
+    upload,
     uploadDocument,
     getDocuments
 };

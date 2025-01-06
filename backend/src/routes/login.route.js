@@ -1,5 +1,6 @@
 const express = require('express');
 const loginController = require('../controllers/login.controller');
+const { signup } = require('../models');
 const Router = express.Router();
 Router.post('/generate-otp', async(req, res) => {
     const { email } = req.body;
@@ -36,7 +37,9 @@ Router.post('/login', async(req, res) => {
         console.log(email,otp);
         const isValid = await loginController.verifyOTP(email, otp);
         if (isValid){
-            res.status(200).send({ message : 'Login Successful' });
+            const userId= await signup.findOne({ where: { stud_email:email } });
+            const uid = userId.UID;
+            res.status(200).json({ message: 'OTP verified successfully',userId:userId.UID });
         }
     } catch(error){
         res.status(401).send({ message: error.message})

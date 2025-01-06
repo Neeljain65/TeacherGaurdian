@@ -5,6 +5,11 @@ module.exports = (sequelize, Sequelize) => {
             autoIncrement: true,
             primaryKey: true,
         },
+        UID: {
+            type: Sequelize.STRING,
+            allowNull: false,
+            unique: true,
+        },
         student_name: {
             type: Sequelize.STRING,
             allowNull: false,
@@ -31,6 +36,10 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false,
         },
         division: { // Changed to lowercase
+            type: Sequelize.STRING,
+            allowNull: false,
+        },
+        roll_no: {
             type: Sequelize.STRING,
             allowNull: false,
         },

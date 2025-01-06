@@ -1,23 +1,37 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
 var corsOption = {
     origin: "http://localhost:3000"
+
 };
 
 app.use(cors(corsOption));
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true}));
+app.use(express.urlencoded({ extended: false}));
 
 app.get("/",(req,res) => {
     res.json({ message: "Welcome to the Website "})
 })
 
-//initializing the db in the main server
+app.get('/pdf/:folder/:filename', (req, res) => {
+    const { folder, filename } = req.params; // Extract folder and filename from the route parameters
+    console.log(`Requested folder: ${folder}, filename: ${filename}`);
+    
+    const filePath = path.join(__dirname, 'uploads', folder, filename); // Construct the file path dynamically
+
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error(`Error serving file: ${err}`);
+            res.status(404).send('File not found');
+        }
+    });
+});
 const db = require("./src/models");
 db.sequelize.sync()
    .then(() => {

@@ -62,7 +62,9 @@ const Login = () => {
         },
         body: JSON.stringify({ email, otp }),
       });
-      console.log(response);
+      // console.log(response.json().then((data) => console.log(data.userId)));
+      const userId = await response.json().then((data) => data.userId);
+      localStorage.setItem('studentId', userId);
       if (!response.ok) {
         throw new Error('Invalid OTP!');
       }
