@@ -8,34 +8,34 @@ module.exports = (sequelize, Sequelize) => {
         Dashboard_id: {
             type: Sequelize.INTEGER,
             references: {
-                model: 'dashboard',
+                model: 'dashboards',
                 key: 'dashboard_primary_key'
             },
             allowNull: true,
         },
         result_12th: {
             type: Sequelize.STRING,
-            allowNull: false
+           
         },
         aadharCard: {
             type: Sequelize.STRING,
-            allowNull: false
+
         },
         panCard: {
             type: Sequelize.STRING,
-            allowNull: false
+
         },
         mhtcetResult: {
             type: Sequelize.STRING,
-            allowNull: false,
+
         },
         admissionCard: {
             type: Sequelize.STRING,
-            allowNull: false
+
         },
         capCard: {
             type: Sequelize.STRING,
-            allowNull: false
+
         },
         domicile: {
             type: Sequelize.STRING,
@@ -51,11 +51,11 @@ module.exports = (sequelize, Sequelize) => {
         },
         filePath: {
             type: Sequelize.STRING,
-            allowNull: false
+
         },
         fileType: {
             type: Sequelize.STRING,
-            allowNull: false
+
         }
     });
 

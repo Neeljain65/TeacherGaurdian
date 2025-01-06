@@ -22,6 +22,7 @@ const SignUp = () => {
     admissionYear: '',
     address: '',
     pincode: '',
+    roll_no: '',
   });
 
   const handleInputChange = (e) => {
@@ -45,6 +46,7 @@ const SignUp = () => {
       'admissionYear',
       'address',
       'pincode',
+      'roll_no',
     ];
 
     for (const field of mandatoryFields) {
@@ -60,7 +62,7 @@ const SignUp = () => {
     if (validateForm()) {
       try {
         const response = await axios.post(
-          'http://localhost:8080/api/signup',
+          'http://localhost:8080/signup',
           {
             student_name: formData.studentName,
             surname: formData.surname,
@@ -76,6 +78,7 @@ const SignUp = () => {
             year_of_admission: formData.admissionYear,
             student_address: formData.address,
             pincode: formData.pincode,
+            roll_no: formData.roll_no,
           },
           {
             headers: {
@@ -86,6 +89,9 @@ const SignUp = () => {
 
         if (response.status === 201) {
           toast.success('Account created successfully!');
+          console.log(response);
+          const userId = response.data.userId;
+          localStorage.setItem('studentId', userId);
           setTimeout(() => {
             navigate('/dashboard'); // Redirect to Dashboard
           }, 1000);
@@ -159,6 +165,13 @@ const SignUp = () => {
             <option value="B">B</option>
             <option value="C">C</option>
           </select>
+          <input
+            type="number"
+            name="roll_no"
+            placeholder="Roll Number"
+            className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleInputChange}
+          />
           <input
             type="text"
             name="fathersName"

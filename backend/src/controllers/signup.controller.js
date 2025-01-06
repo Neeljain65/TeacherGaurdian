@@ -1,5 +1,11 @@
-const db = require("../../app"); // Ensure this points to your database configuration
+const db = require("../models"); // Ensure this points to your database configuration
 const signup = db.signup; // Signup model
+const generateUID = (yearOfAdmission, branch, division, rollNumber) => {
+    const year = yearOfAdmission?.toString().slice(-2); // Get the last two digits of the year
+    const formattedBranch = branch?.toUpperCase(); // Convert branch to uppercase
+    const formattedDivision = division?.toUpperCase(); // Convert division to uppercase
+    return `${year}-${formattedBranch}${formattedDivision}-${rollNumber}`;
+};
 
 // Function to create a new user
 exports.create = (req, res) => {
@@ -12,6 +18,7 @@ exports.create = (req, res) => {
         !req.body.stud_email ||
         !req.body.Branch ||
         !req.body.Division ||
+        !req.body.roll_no ||
         !req.body.father_name ||
         !req.body.father_phone_no ||
         !req.body.mother_name ||
@@ -32,11 +39,12 @@ exports.create = (req, res) => {
         gender: req.body.gender,
         stud_phone_no: req.body.stud_phone_no,
         stud_email: req.body.stud_email,
-        Branch: req.body.Branch,
-        Division: req.body.Division,
+        branch: req.body.Branch,
+        division: req.body.Division,
+        roll_no: req.body.roll_no,
         father_name: req.body.father_name,
         father_email: req.body.father_email || null, // Optional field
-        father_phone_no: req.body.father_phone_no,
+        parent_phone_no: req.body.father_phone_no,
         mother_name: req.body.mother_name,
         mother_email: req.body.mother_email || null, // Optional field
         mother_phone_no: req.body.mother_phone_no,
@@ -44,14 +52,23 @@ exports.create = (req, res) => {
         student_address: req.body.student_address,
         pincode: req.body.pincode
     };
+    user.UID = generateUID(
+        req.body.year_of_admission,
+        req.body.Branch,
+        req.body.Division,req.body.roll_no
+    );
 
     // Save user to the database
-    signup.create(user)
-        .then(data => {
-            res.status(201).send({
-                message: "User created successfully!",
-                data: data
+    signup.create(user).then(data => {
+            db.dashboard.create({
+                student_foregin_id: data.id
+            }).then(() => {
+                res.status(201).json({
+                    message: "User created successfully!",
+                    userId: data.UID
+                });
             });
+           
         })
         .catch(err => {
             console.error("Error creating user:", err);
