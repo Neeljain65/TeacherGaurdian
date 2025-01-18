@@ -8,7 +8,7 @@ const generateUID = (yearOfAdmission, branch, division, rollNumber) => {
 };
 
 // Function to create a new user
-exports.create = (req, res) => {
+module.exports.create = (req, res) => {
     console.log(req.body);
 
     // Validate request

@@ -39,11 +39,24 @@
   }
   
   .dashboard-link {
-    display: inline-block;
+    margin: auto;
+    display: flex;
     padding: 12px 20px;
     font-size: 1.1rem;
     color: #ffffff;
     background-color: #34495e; /* Dark blue/gray for formality */
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 400px;
+  }
+  .dashboard-link-not {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    color: #ffffff;
+    background-color: #97031b; /* Dark blue/gray for formality */
     border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease;
