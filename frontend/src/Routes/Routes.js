@@ -1,8 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from '../Components/Login';
+import AdLogin from '../AdminLogin/login';
+import TeacherLogin from '../TeacherLogin/login';
 import Signup from '../Components/Signup';
+
 import Dashboard from '../Components/Dashboard';
+import AdDashboard from '../AdminLogin/Dashboard';
+import TeacherDashboard from '../TeacherLogin/Dashboard';
 import UploadDocs from '../Components/UploadDocs';
 import ResultUpload from '../Components/Docs/ResultUpload';
 import AdharCardUpload from '../Components/Docs/AdharCardUpload';
@@ -22,8 +27,12 @@ const AppRoutes = () => {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/admin" element={<AdLogin />} />
+        <Route path="/Teacher" element={<TeacherLogin />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/Admindashboard" element={<AdDashboard />} />
+        <Route path="/TeacherDashboard" element={<TeacherDashboard />} />
         <Route path="/upload" element={<UploadDocs />} />
         <Route path="/upload-result" element={<ResultUpload />} />
         <Route path="/upload-adharcard" element={<AdharCardUpload />} />
