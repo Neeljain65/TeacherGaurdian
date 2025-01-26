@@ -31,6 +31,7 @@ function generateOTP(){
 async function isEmailRegistered(email) {
     const registeredUser = await signup.findOne({ where: { stud_email:email } });
     if (registeredUser) {
+        console.log("User found");
         return true;
     }
     return false;
@@ -60,7 +61,17 @@ async function sendOTPEmail(email, otp){
     };
     transporter.sendMail(mailOptions);
 } 
-
+async function TeacherLogin(email, password){
+    const user = await db.teachers.findOne({ where: {teacher_email: email } });
+    if(!user){
+        throw new Error(`User not found`);
+    }
+    if(user.teacher_password == password){
+        return true;
+    } else {
+        throw new Error('Invalid Password');
+    }
+}
 
 async function verifyOTP(email, otp){
     const user = await login.findOne({ where: { email } });
@@ -77,9 +88,22 @@ async function verifyOTP(email, otp){
     }
 }
 
+async function AdminLogin(email, password){
+    const user = await db.admin.findOne({ where: { admin_email:email } });
+    if(!user){
+        throw new Error(`User not found`);
+    }
+    if(user.admin_password == password){
+        return true;
+    } else {
+        throw new Error('Invalid Password');
+    }
+}   
 module.exports = {
     generateandStoreOTP,
     isEmailRegistered, 
     sendOTPEmail,
     verifyOTP,
+    TeacherLogin,
+    AdminLogin
 };

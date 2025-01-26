@@ -3,6 +3,7 @@ const db = require('../models');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const teachers = db.teachers;
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -102,9 +103,50 @@ const getDocuments = async (req, res) => {
         res.status(500).json({ message: 'Error retrieving documents', error });
     }
 };
+const getTechers = async (req, res) => {
+    const {admin_id}= req.body;
+    const admin = await db.admin.findOne({where:{admin_id}});
+    if(!admin){
+        return res.status(400).json({message:"Admin not found"});
+    }
+    const branch = admin.admin_branch;
+    console.log('branch', branch)
+    try {
+        const teacher = await teachers.findAll({
+            where: { teacher_branch:branch }
+        });
+        
+        res.status(200).json({ teacher });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error retrieving teachers', error });
+    }
+}
+const getAssignedStudents = async (req, res) => {
+  try {
+    const {teacher_id} = req.body;
+    const teacher = await db.teachers.findOne({
+        where: { teacher_id: teacher_id },
+    });
+    console.log('teacher', teacher);
+    if (!teacher) {
+      return res.status(404).json({ message: "Teacher not found" });
+    }
+   const division = teacher.division;
+    const students = await db.signup.findAll({
+      where: { division:division}, // Match division from Teachers table
+    });
 
+    res.status(200).json({ students });
+  } catch (error) {
+    console.error("Error fetching assigned students:", error);
+    res.status(500).json({ error: "Failed to fetch assigned students" });
+  }
+};
 module.exports = {
     upload,
     uploadDocument,
-    getDocuments
+    getDocuments,
+    getTechers,
+    getAssignedStudents
 };
